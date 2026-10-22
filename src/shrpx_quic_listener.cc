@@ -73,6 +73,7 @@ void QUICListener::on_read() {
   auto quic_conn_handler = worker_->get_quic_connection_handler();
 
   for (; pktcnt < 64;) {
+    msg.msg_flags = 0;
     msg.msg_namelen = sizeof(ss);
     msg.msg_controllen = sizeof(msg_ctrl);
 
@@ -82,7 +83,7 @@ void QUICListener::on_read() {
     }
 
     // Packets less than 21 bytes never be a valid QUIC packet.
-    if (nread < 21) {
+    if (nread < 21 || (msg.msg_flags & (MSG_TRUNC | MSG_CTRUNC))) {
       ++pktcnt;
 
       continue;
